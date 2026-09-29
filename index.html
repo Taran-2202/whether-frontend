@@ -1,0 +1,643 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WeatherNow | Live Weather Forecast</title>
+
+    <style>
+        /* =========================
+           1. GENERAL STYLING
+        ========================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #222;
+        }
+
+        .weather-app {
+            width: 100%;
+            max-width: 480px;
+            padding: 30px;
+            border-radius: 25px;
+
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+
+            backdrop-filter: blur(15px);
+        }
+
+        /* =========================
+           2. HEADER
+        ========================= */
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* =========================
+           3. SEARCH BAR
+        ========================= */
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-form input {
+            flex: 1;
+            min-width: 0;
+            padding: 14px 16px;
+
+            border: 2px solid #eee;
+            border-radius: 12px;
+            outline: none;
+
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        .search-form input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+        }
+
+        .search-form button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+
+            background: #667eea;
+            color: white;
+
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        .search-form button:hover {
+            background: #5267d5;
+            transform: translateY(-1px);
+        }
+
+        .search-form button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* =========================
+           4. STATUS MESSAGES
+        ========================= */
+
+        .status {
+            display: none;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .loading {
+            color: #667eea;
+        }
+
+        .error {
+            color: #d93025;
+            background: #fff0f0;
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        /* =========================
+           5. WEATHER DISPLAY
+        ========================= */
+
+        .weather-info {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .location h2 {
+            font-size: 27px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .location p {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .weather-main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .weather-icon {
+            font-size: 75px;
+            line-height: 1;
+        }
+
+        .temperature {
+            font-size: 55px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .description {
+            color: #777;
+            font-size: 15px;
+            margin-top: 5px;
+        }
+
+        /* =========================
+           6. WEATHER DETAILS
+        ========================= */
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .detail-card {
+            background: #f5f6ff;
+            border: 1px solid #eceeff;
+            border-radius: 15px;
+            padding: 18px 10px;
+            transition: 0.3s;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-3px);
+            background: #eef0ff;
+        }
+
+        .detail-icon {
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            font-size: 19px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* =========================
+           7. FOOTER
+        ========================= */
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* =========================
+           8. ANIMATION
+        ========================= */
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* =========================
+           9. RESPONSIVE DESIGN
+        ========================= */
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .weather-app {
+                padding: 22px 17px;
+            }
+
+            .header h1 {
+                font-size: 25px;
+            }
+
+            .search-form button {
+                padding: 12px 15px;
+            }
+
+            .temperature {
+                font-size: 45px;
+            }
+
+            .weather-icon {
+                font-size: 60px;
+            }
+
+            .location h2 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="weather-app">
+
+        <!-- HEADER -->
+        <header class="header">
+            <h1>🌤️ WeatherNow</h1>
+            <p>Discover the weather anywhere in the world</p>
+        </header>
+
+        <!-- SEARCH FORM -->
+        <form class="search-form" id="searchForm">
+
+            <input
+                type="text"
+                id="cityInput"
+                placeholder="Enter city name..."
+                autocomplete="off"
+                aria-label="Enter city name"
+                required
+            >
+
+            <button type="submit" id="searchButton">
+                Search
+            </button>
+
+        </form>
+
+        <!-- LOADING MESSAGE -->
+        <p class="status loading" id="loadingMessage" aria-live="polite">
+            Fetching weather data...
+        </p>
+
+        <!-- ERROR MESSAGE -->
+        <p class="status error" id="errorMessage" role="alert"></p>
+
+        <!-- WEATHER INFORMATION -->
+        <section class="weather-info" id="weatherInfo" aria-live="polite">
+
+            <!-- CITY -->
+            <div class="location">
+                <h2 id="cityName">City Name</h2>
+                <p id="dateTime">Local date and time</p>
+            </div>
+
+            <!-- MAIN WEATHER -->
+            <div class="weather-main">
+
+                <div class="weather-icon" id="weatherIcon">
+                    ☀️
+                </div>
+
+                <div>
+                    <h2 class="temperature" id="temperature">
+                        --°C
+                    </h2>
+
+                    <p class="description" id="description">
+                        Weather condition
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- WEATHER DETAILS -->
+            <div class="weather-details">
+
+                <div class="detail-card">
+                    <div class="detail-icon">💧</div>
+                    <p class="detail-label">Humidity</p>
+                    <h3 class="detail-value" id="humidity">--%</h3>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">💨</div>
+                    <p class="detail-label">Wind Speed</p>
+                    <h3 class="detail-value" id="windSpeed">-- km/h</h3>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🌡️</div>
+                    <p class="detail-label">Feels Like</p>
+                    <h3 class="detail-value" id="feelsLike">--°C</h3>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">☁️</div>
+                    <p class="detail-label">Cloud Cover</p>
+                    <h3 class="detail-value" id="cloudCover">--%</h3>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <p>Weather data powered by Open-Meteo</p>
+        </footer>
+
+    </main>
+
+
+    <script>
+        /* ==================================
+           1. GET HTML ELEMENTS
+        ================================== */
+
+        const searchForm = document.getElementById("searchForm");
+        const cityInput = document.getElementById("cityInput");
+        const searchButton = document.getElementById("searchButton");
+
+        const loadingMessage = document.getElementById("loadingMessage");
+        const errorMessage = document.getElementById("errorMessage");
+        const weatherInfo = document.getElementById("weatherInfo");
+
+        const cityName = document.getElementById("cityName");
+        const dateTime = document.getElementById("dateTime");
+        const temperature = document.getElementById("temperature");
+        const description = document.getElementById("description");
+        const weatherIcon = document.getElementById("weatherIcon");
+
+        const humidity = document.getElementById("humidity");
+        const windSpeed = document.getElementById("windSpeed");
+        const feelsLike = document.getElementById("feelsLike");
+        const cloudCover = document.getElementById("cloudCover");
+
+
+        /* ==================================
+           2. WEATHER CONDITION MAPPING
+        ================================== */
+
+        function getWeatherCondition(code, isDay) {
+
+            const conditions = {
+                0: ["Clear Sky", isDay ? "☀️" : "🌙"],
+                1: ["Mainly Clear", isDay ? "🌤️" : "🌙"],
+                2: ["Partly Cloudy", "⛅"],
+                3: ["Overcast", "☁️"],
+
+                45: ["Foggy", "🌫️"],
+                48: ["Depositing Rime Fog", "🌫️"],
+
+                51: ["Light Drizzle", "🌦️"],
+                53: ["Moderate Drizzle", "🌦️"],
+                55: ["Dense Drizzle", "🌧️"],
+
+                56: ["Freezing Drizzle", "🌧️"],
+                57: ["Heavy Freezing Drizzle", "🌧️"],
+
+                61: ["Slight Rain", "🌧️"],
+                63: ["Moderate Rain", "🌧️"],
+                65: ["Heavy Rain", "🌧️"],
+
+                66: ["Freezing Rain", "🌧️"],
+                67: ["Heavy Freezing Rain", "🌧️"],
+
+                71: ["Slight Snowfall", "🌨️"],
+                73: ["Moderate Snowfall", "🌨️"],
+                75: ["Heavy Snowfall", "❄️"],
+                77: ["Snow Grains", "❄️"],
+
+                80: ["Rain Showers", "🌦️"],
+                81: ["Moderate Rain Showers", "🌧️"],
+                82: ["Violent Rain Showers", "⛈️"],
+
+                85: ["Snow Showers", "🌨️"],
+                86: ["Heavy Snow Showers", "❄️"],
+
+                95: ["Thunderstorm", "⛈️"],
+                96: ["Thunderstorm with Hail", "⛈️"],
+                99: ["Heavy Thunderstorm with Hail", "⛈️"]
+            };
+
+            return conditions[code] || ["Unknown Weather", "🌡️"];
+        }
+
+
+        /* ==================================
+           3. SEARCH FORM EVENT
+        ================================== */
+
+        searchForm.addEventListener("submit", function(event) {
+
+            // Prevent page reload
+            event.preventDefault();
+
+            const city = cityInput.value.trim();
+
+            if (!city) {
+                showError("Please enter a city name.");
+                return;
+            }
+
+            getWeather(city);
+        });
+
+
+        /* ==================================
+           4. FETCH WEATHER DATA
+        ================================== */
+
+        async function getWeather(city) {
+
+            // Reset previous results
+            weatherInfo.style.display = "none";
+            errorMessage.style.display = "none";
+
+            loadingMessage.style.display = "block";
+
+            searchButton.disabled = true;
+            searchButton.textContent = "Searching...";
+
+            try {
+
+                /* STEP 1: GEOCODING API
+                   Convert city name into coordinates.
+                */
+
+                const geoURL =
+                    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=10&language=en&format=json`;
+
+                const geoResponse = await fetch(geoURL);
+
+                if (!geoResponse.ok) {
+                    throw new Error("Unable to search for this city.");
+                }
+
+                const geoData = await geoResponse.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error("City not found. Please check the spelling.");
+                }
+
+                // Get first matching location
+                const location = geoData.results[0];
+
+                const latitude = location.latitude;
+                const longitude = location.longitude;
+
+
+                /* STEP 2: WEATHER API
+                   Fetch current weather using coordinates.
+                */
+
+                const weatherURL =
+                    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,cloud_cover&timezone=auto`;
+
+                const weatherResponse = await fetch(weatherURL);
+
+                if (!weatherResponse.ok) {
+                    throw new Error("Unable to fetch weather information.");
+                }
+
+                const weatherData = await weatherResponse.json();
+
+                if (!weatherData.current) {
+                    throw new Error("Weather information is unavailable.");
+                }
+
+                // Display the weather
+                displayWeather(location, weatherData.current);
+
+            }
+
+            catch (error) {
+
+                showError(error.message);
+
+            }
+
+            finally {
+
+                loadingMessage.style.display = "none";
+
+                searchButton.disabled = false;
+                searchButton.textContent = "Search";
+            }
+        }
+
+
+        /* ==================================
+           5. DISPLAY WEATHER INFORMATION
+        ================================== */
+
+        function displayWeather(location, current) {
+
+            // Get weather description and icon
+            const [weatherText, icon] =
+                getWeatherCondition(current.weather_code, current.is_day);
+
+            // Display city, region and country
+            const locationParts = [
+                location.name,
+                location.admin1,
+                location.country
+            ].filter(Boolean);
+
+            cityName.textContent = [...new Set(locationParts)].join(", ");
+
+            // Display temperature
+            temperature.textContent =
+                `${Math.round(current.temperature_2m)}°C`;
+
+            // Display weather condition
+            description.textContent = weatherText;
+            weatherIcon.textContent = icon;
+
+            // Display additional weather information
+            humidity.textContent =
+                `${current.relative_humidity_2m}%`;
+
+            windSpeed.textContent =
+                `${current.wind_speed_10m} km/h`;
+
+            feelsLike.textContent =
+                `${Math.round(current.apparent_temperature)}°C`;
+
+            cloudCover.textContent =
+                `${current.cloud_cover}%`;
+
+            // Display local observation date/time
+            const observationTime = new Date(current.time);
+
+            dateTime.textContent = observationTime.toLocaleString(
+                "en-IN",
+                {
+                    dateStyle: "full",
+                    timeStyle: "short"
+                }
+            );
+
+            // Show weather section
+            weatherInfo.style.display = "block";
+        }
+
+
+        /* ==================================
+           6. ERROR HANDLING
+        ================================== */
+
+        function showError(message) {
+
+            errorMessage.textContent = message;
+            errorMessage.style.display = "block";
+
+        }
+
+    </script>
+
+</body>
+</html>
